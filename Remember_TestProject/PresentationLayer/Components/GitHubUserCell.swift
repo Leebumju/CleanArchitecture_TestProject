@@ -12,10 +12,11 @@ import SnapKit
 final class GitHubUserCell: UICollectionViewCell {
     private(set) lazy var containerView: TouchableView = TouchableView().then {
         $0.backgroundColor = .white
-        $0.layer.cornerRadius = moderateScale(number: 12)
     }
     
     private lazy var avatarImageView: UIImageView = UIImageView().then {
+        $0.image = UIImage(systemName: "person.circle.fill")?.withTintColor(.systemGray5,
+                                                                            renderingMode: .alwaysOriginal)
         $0.contentMode = .scaleAspectFit
     }
     
@@ -47,7 +48,8 @@ final class GitHubUserCell: UICollectionViewCell {
         addSubview(containerView)
         containerView.addSubviews([avatarImageView,
                                    userLoginLabel,
-                                   favoriteButton])
+                                   favoriteButton,
+                                   dividerView])
     }
     
     private func makeConstraints() {
@@ -72,9 +74,17 @@ final class GitHubUserCell: UICollectionViewCell {
             $0.trailing.equalToSuperview().offset(moderateScale(number: -12))
             $0.size.equalTo(moderateScale(number: 24))
         }
+        
+        dividerView.snp.makeConstraints {
+            $0.bottom.equalToSuperview()
+            $0.leading.trailing.equalToSuperview()
+            $0.height.equalTo(moderateScale(number: 1))
+        }
     }
     
     func updateView(with gitHubUser: GitHubUserEntity) {
-    
+        userLoginLabel.text = "tester"
+        favoriteButton.image = UIImage(systemName: "star.fill")?.withTintColor(gitHubUser.isFavorite ? .systemYellow : .systemGray5,
+                                                                               renderingMode: .alwaysOriginal)
     }
 }

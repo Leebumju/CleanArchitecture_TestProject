@@ -67,7 +67,7 @@ final class UserListViewController: BaseViewController, AppCoordinated {
         
         userListTabs.snp.makeConstraints {
             $0.top.equalTo(titleLabel.snp.bottom).offset(moderateScale(number: 20))
-            $0.leading.trailing.equalToSuperview().inset(moderateScale(number: 20))
+            $0.leading.trailing.equalToSuperview()
             $0.height.equalTo(moderateScale(number: 40))
         }
         
