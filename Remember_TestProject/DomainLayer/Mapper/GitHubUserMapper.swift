@@ -6,7 +6,8 @@
 //
 
 struct GitHubUserMapper {
-    static func gitHubUsertoEntity(_ response: GitHubUserResponse) -> [GitHubUserEntity] {
+    // Remote
+    static func gitHubUserResponsetoEntity(_ response: GitHubUserResponse) -> [GitHubUserEntity] {
         guard let users = response.items else { return [] }
         return users.map { user in
             GitHubUserEntity(
@@ -14,6 +15,18 @@ struct GitHubUserMapper {
                 login: user.login ?? "",
                 avatarURL: user.avatarURL ?? "",
                 isFavorite: false
+            )
+        }
+    }
+    
+    // Local
+    static func gitHubUserObjectToEntity(_ objects: [GitHubUserObject]) -> [GitHubUserEntity] {
+        return objects.map { object in
+            GitHubUserEntity(
+                id: object.id,
+                login: object.login,
+                avatarURL: object.avatarURL,
+                isFavorite: true
             )
         }
     }

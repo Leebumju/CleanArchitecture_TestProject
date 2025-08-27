@@ -15,8 +15,7 @@ final class GitHubUserCell: UICollectionViewCell {
     }
     
     private lazy var avatarImageView: UIImageView = UIImageView().then {
-        $0.image = UIImage(systemName: "person.circle.fill")?.withTintColor(.systemGray5,
-                                                                            renderingMode: .alwaysOriginal)
+        $0.image = UIImage(systemName: "person.circle.fill")?.tinted(.systemGray5)
         $0.contentMode = .scaleAspectFit
     }
     
@@ -58,7 +57,7 @@ final class GitHubUserCell: UICollectionViewCell {
         }
         
         avatarImageView.snp.makeConstraints {
-            $0.top.bottom.equalToSuperview().inset(moderateScale(number: 12))
+            $0.centerY.equalToSuperview()
             $0.leading.equalToSuperview().offset(moderateScale(number: 12))
             $0.size.equalTo(moderateScale(number: 36))
         }
@@ -83,8 +82,16 @@ final class GitHubUserCell: UICollectionViewCell {
     }
     
     func updateView(with gitHubUser: GitHubUserEntity) {
-        userLoginLabel.text = "tester"
-        favoriteButton.image = UIImage(systemName: "star.fill")?.withTintColor(gitHubUser.isFavorite ? .systemYellow : .systemGray5,
-                                                                               renderingMode: .alwaysOriginal)
+        userLoginLabel.text = gitHubUser.login
+        favoriteButton.image = UIImage(systemName: "star.fill")?.tinted(gitHubUser.isFavorite ? .systemYellow : .systemGray5)
+        
+        if gitHubUser.avatarURL.isEmpty {
+            avatarImageView.image = UIImage(systemName: "person.circle.fill")?.tinted(.systemGray5)
+        } else {
+            avatarImageView.setImageWithSpinner(
+                urlString: gitHubUser.avatarURL,
+                placeholder: UIImage(systemName: "person.circle.fill")?.tinted(.systemGray5)
+            )
+        }
     }
 }

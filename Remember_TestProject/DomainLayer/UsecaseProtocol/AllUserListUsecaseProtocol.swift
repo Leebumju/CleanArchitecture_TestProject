@@ -5,6 +5,11 @@
 //  Created by 이범준 on 8/27/25.
 //
 
+import Combine
+
 protocol AllUserListUsecaseProtocol: BaseUsecaseProtocol {
-    func searchUsers(with query: String) async throws
+    var favoriteUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> { get }
+    
+    func searchUsers(with query: String) async throws -> [GitHubUserEntity]
+    func toggleFavorite(_ user: GitHubUserEntity) throws
 }

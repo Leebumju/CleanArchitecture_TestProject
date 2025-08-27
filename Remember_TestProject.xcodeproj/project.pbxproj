@@ -13,6 +13,7 @@
 		D892A0512E5D77CF001A51CD /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = D892A0502E5D77CF001A51CD /* SnapKit */; };
 		D892A0542E5D7846001A51CD /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = D892A0532E5D7846001A51CD /* Moya */; };
 		D892A0572E5D7884001A51CD /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = D892A0562E5D7884001A51CD /* Lottie */; };
+		D8F345652E5F4EF80025CE5B /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D8F345642E5F4EF80025CE5B /* RealmSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 			files = (
 				D892A0482E5D7789001A51CD /* Kingfisher in Frameworks */,
 				D892A0512E5D77CF001A51CD /* SnapKit in Frameworks */,
+				D8F345652E5F4EF80025CE5B /* RealmSwift in Frameworks */,
 				D892A04E2E5D77BB001A51CD /* Then in Frameworks */,
 				D892A0542E5D7846001A51CD /* Moya in Frameworks */,
 				D892A04B2E5D77AB001A51CD /* Swinject in Frameworks */,
@@ -99,6 +101,7 @@
 				D892A0502E5D77CF001A51CD /* SnapKit */,
 				D892A0532E5D7846001A51CD /* Moya */,
 				D892A0562E5D7884001A51CD /* Lottie */,
+				D8F345642E5F4EF80025CE5B /* RealmSwift */,
 			);
 			productName = Remember_TestProject;
 			productReference = D8929F542E5D70F4001A51CD /* Remember_TestProject.app */;
@@ -135,6 +138,7 @@
 				D892A04F2E5D77CF001A51CD /* XCRemoteSwiftPackageReference "SnapKit" */,
 				D892A0522E5D7846001A51CD /* XCRemoteSwiftPackageReference "Moya" */,
 				D892A0552E5D7884001A51CD /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				D8F345632E5F4EF80025CE5B /* XCRemoteSwiftPackageReference "realm-cocoa" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D8929F552E5D70F4001A51CD /* Products */;
@@ -412,6 +416,14 @@
 				minimumVersion = 4.5.2;
 			};
 		};
+		D8F345632E5F4EF80025CE5B /* XCRemoteSwiftPackageReference "realm-cocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-cocoa";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.40.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -444,6 +456,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D892A0552E5D7884001A51CD /* XCRemoteSwiftPackageReference "lottie-ios" */;
 			productName = Lottie;
+		};
+		D8F345642E5F4EF80025CE5B /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D8F345632E5F4EF80025CE5B /* XCRemoteSwiftPackageReference "realm-cocoa" */;
+			productName = RealmSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

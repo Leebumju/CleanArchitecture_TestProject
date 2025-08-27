@@ -9,4 +9,7 @@ import Foundation
 import Combine
 
 protocol LocalDataFetchable: AnyObject {
+    func save(_ user: GitHubUserEntity) throws
+    func delete(_ user: GitHubUserEntity) throws
+    func fetchFavoriteUsers() -> [GitHubUserEntity]
 }

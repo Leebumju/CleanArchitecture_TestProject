@@ -8,9 +8,10 @@
 import UIKit
 import SnapKit
 import Then
+import Combine
 
 final class AllUserListViewController: BaseViewController {
-    let temp = 2
+    private var cancelBag = Set<AnyCancellable>()
     
     private(set) lazy var searchTextField: UITextField = UITextField().then {
         $0.addLeftPadding(moderateScale(number: 12))
@@ -21,6 +22,7 @@ final class AllUserListViewController: BaseViewController {
         $0.setCustomPlaceholder(placeholder: "검색어를 입력하세요.",
                                 color: .systemGray3,
                                 font: FontManager.body2M.font)
+        $0.delegate = self
     }
     
     private lazy var gitHubUserListView: UICollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout()).then {
@@ -68,11 +70,16 @@ final class AllUserListViewController: BaseViewController {
     }
     
     override func setupIfNeeded() {
-        searchUsers()
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture))
+        view.addGestureRecognizer(tapGestureRecognizer)
     }
     
     private func bind() {
-        
+        viewModel.searchedUsersPublisher
+            .droppedSink { [weak self] _ in
+                guard let self = self else { return }
+                gitHubUserListView.reloadData()
+            }.store(in: &cancelBag)
     }
     
     private func layout() -> UICollectionViewCompositionalLayout {
@@ -80,12 +87,12 @@ final class AllUserListViewController: BaseViewController {
             guard let self = self else { return nil }
             let itemSize: NSCollectionLayoutSize
             
-            if temp == 0 {
+            if viewModel.allSearchedUsers.isEmpty {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                   heightDimension: .fractionalHeight(1))
             } else {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                                  heightDimension: .estimated(moderateScale(number: 100)))
+                                                  heightDimension: .estimated(moderateScale(number: 60)))
             }
             
             return CompositionalLayoutProvider.configureSectionLayout(withItemLayout: .init(size: itemSize),
@@ -94,28 +101,57 @@ final class AllUserListViewController: BaseViewController {
         }
     }
     
-    private func searchUsers() {
+    private func searchUsers(keyword: String) {
         Task {
             do {
                 CommonUtil.showLoadingView()
-                try await viewModel.searchUsers(with: "d")
+                try await viewModel.searchUsers(with: keyword)
                 CommonUtil.hideLoadingView()
             } catch {}
         }
+    }
+    
+    @objc
+    private func handleTapGesture() {
+        view.endEditing(true)
+    }
+}
+
+// MARK: - UITextFieldDelegate
+extension AllUserListViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        
+        if let keyword = textField.text {
+            searchUsers(keyword: keyword)
+        }
+        return true
     }
 }
 
 extension AllUserListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        let allSearchedUsers: [GitHubUserEntity] = viewModel.allSearchedUsers
+        
+        if allSearchedUsers.isEmpty {
+            return 1
+        } else {
+            return allSearchedUsers.count
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }
-        cell.updateView(with: .init(id: 0,
-                                    login: "",
-                                    avatarURL: "",
-                                    isFavorite: false))
-        return cell
+        let allSearchedUsers: [GitHubUserEntity] = viewModel.allSearchedUsers
+        
+        if allSearchedUsers.isEmpty {
+            guard let cell = collectionView.dequeueReusableCell(NoSearchedDataCell.self, indexPath: indexPath) else { return .init() }
+            
+            return cell
+        } else {
+            guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }
+            cell.updateView(with: allSearchedUsers[indexPath.item])
+            
+            return cell
+        }
     }
 }
