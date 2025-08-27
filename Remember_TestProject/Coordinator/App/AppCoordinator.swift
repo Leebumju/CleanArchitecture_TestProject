@@ -28,7 +28,13 @@ final class AppCoordinator: AppCoordinatable {
       
         switch flow {
         case .userListFlow:
-            return
+            startUserListFlow(userData: userData)
         }
+    }
+    
+    private func startUserListFlow(userData: [String: Any]?) {
+        let userListVC: UserListViewController = UserListViewController()
+        userListVC.coordinator = self
+        rootNavigationController?.pushViewController(userListVC, animated: true)
     }
 }

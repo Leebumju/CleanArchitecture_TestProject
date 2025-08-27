@@ -19,7 +19,6 @@ final class SplashViewController: BaseViewController, AppCoordinated {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
     }
     
     override func addViews() {
@@ -37,7 +36,7 @@ final class SplashViewController: BaseViewController, AppCoordinated {
     override func setupIfNeeded() {
         super.setupIfNeeded()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-//            self.coordinator?.moveTo(.tabBar(.searchBook(.main)), userData: nil)
+            self.coordinator?.moveTo(.userListFlow, userData: nil)
         }
     }
 }
