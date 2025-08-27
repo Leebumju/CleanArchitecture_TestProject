@@ -33,8 +33,19 @@ final class AppCoordinator: AppCoordinatable {
     }
     
     private func startUserListFlow(userData: [String: Any]?) {
-        let userListVC: UserListViewController = UserListViewController()
+        let allUseCase = Injector.shared.resolve(AllUserListUsecaseProtocol.self)!
+        let favoriteUseCase = Injector.shared.resolve(FavoriteUserListUsecaseProtocol.self)!
+        
+        let allVM = AllUserListViewModel(usecase: allUseCase)
+        let favoriteVM = FavoriteUserListViewModel(usecase: favoriteUseCase)
+        
+        let allVC = AllUserListViewController(viewModel: allVM)
+        let favoriteVC = FavoriteUserListViewController(viewModel: favoriteVM)
+        
+        let userListVC = UserListViewController(allUserListVC: allVC,
+                                                favoriteUserListVC: favoriteVC)
         userListVC.coordinator = self
+        
         rootNavigationController?.pushViewController(userListVC, animated: true)
     }
 }

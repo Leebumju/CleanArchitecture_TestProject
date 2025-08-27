@@ -14,7 +14,9 @@ final class SplashViewController: BaseViewController, AppCoordinated {
     var coordinator: AnyAppCoordinator?
     
     private lazy var titleLabel: UILabel = UILabel().then {
-        $0.text = "Splash View"
+        $0.attributedText = FontManager.headline2B.setFont("Remember TestProject",
+                                                           alignment: .center)
+        $0.textColor = .black
     }
 
     override func viewDidLoad() {
