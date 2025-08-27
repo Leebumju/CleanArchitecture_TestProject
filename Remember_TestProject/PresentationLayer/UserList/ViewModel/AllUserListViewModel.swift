@@ -12,4 +12,10 @@ final class AllUserListViewModel: BaseViewModel {
         self.usecase = usecase
         super.init(usecase: usecase)
     }
+    
+    func searchUsers(with query: String) async throws {
+        do {
+            try await usecase.searchUsers(with: query)
+        } catch { throw error }
+    }
 }

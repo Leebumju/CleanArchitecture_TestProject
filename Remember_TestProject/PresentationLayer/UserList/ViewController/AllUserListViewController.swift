@@ -24,7 +24,7 @@ final class AllUserListViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .yellow
+        
     }
     
     override func addViews() {
@@ -36,6 +36,16 @@ final class AllUserListViewController: BaseViewController {
     }
     
     override func setupIfNeeded() {
-        
+        searchUsers()
+    }
+    
+    private func searchUsers() {
+        Task {
+            do {
+                CommonUtil.showLoadingView()
+                try await viewModel.searchUsers(with: "d")
+                CommonUtil.hideLoadingView()
+            } catch {}
+        }
     }
 }

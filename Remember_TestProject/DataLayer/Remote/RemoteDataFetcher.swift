@@ -7,4 +7,20 @@
 
 final class RemoteDataFetcher: RemoteDataFetchable {
     private let networkWrapper: NetworkWrapper = NetworkWrapper.shared
+    
+    func searchUsers(with query: String) async throws -> GitHubUserResponse {
+        do {
+            let response = try await networkWrapper.fetchPublicService(.searchUsers(query: query))
+            
+            guard let decodedResponse = try DecodeUtil.decode(GitHubUserResponse.self,
+                                                              data: response.data) else {
+                throw NetworkError.typeMismatch
+            }
+
+            return decodedResponse
+        } catch {
+            print(error)
+            throw error
+        }
+    }
 }

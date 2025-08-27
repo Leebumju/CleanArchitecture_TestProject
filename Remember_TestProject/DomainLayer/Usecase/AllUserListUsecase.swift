@@ -20,6 +20,15 @@ final class AllUserListUsecase {
 }
 
 extension AllUserListUsecase: AllUserListUsecaseProtocol {
+    func searchUsers(with query: String) async throws {
+        do {
+            print(try await repository.searchUsers(with: query))
+        } catch {
+            errorSubject.send(error)
+            throw error
+        }
+    }
+    
     func getErrorSubject() -> AnyPublisher<Error, Never> {
         return errorSubject.eraseToAnyPublisher()
     }

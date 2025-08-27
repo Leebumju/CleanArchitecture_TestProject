@@ -6,8 +6,14 @@
 //
 
 import Foundation
+import Combine
 
 final class UserListRepository {
+    private(set) var favoriteUsersSubjectSubject = CurrentValueSubject<[GitHubUserEntity], Never>([])
+    var favoriteUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
+        favoriteUsersSubjectSubject.eraseToAnyPublisher()
+    }
+    
     private let remoteDataFetcher: RemoteDataFetchable
     private let localDataFetcher: LocalDataFetchable
     
@@ -18,5 +24,8 @@ final class UserListRepository {
 }
 
 extension UserListRepository: UserListRepositoryProtocol {
-
+    func searchUsers(with query: String) async throws -> [GitHubUserEntity] {
+        let response = try await remoteDataFetcher.searchUsers(with: query)
+        return GitHubUserMapper.gitHubUsertoEntity(response)
+    }
 }

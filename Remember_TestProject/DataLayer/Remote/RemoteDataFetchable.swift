@@ -8,5 +8,5 @@
 import Foundation
 
 protocol RemoteDataFetchable: AnyObject {
-    
+    func searchUsers(with query: String) async throws -> GitHubUserResponse
 }

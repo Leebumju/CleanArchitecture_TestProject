@@ -5,4 +5,6 @@
 //  Created by 이범준 on 8/27/25.
 //
 
-protocol AllUserListUsecaseProtocol: BaseUsecaseProtocol {}
+protocol AllUserListUsecaseProtocol: BaseUsecaseProtocol {
+    func searchUsers(with query: String) async throws
+}
