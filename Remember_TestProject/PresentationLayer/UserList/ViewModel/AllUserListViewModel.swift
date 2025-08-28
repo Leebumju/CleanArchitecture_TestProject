@@ -12,17 +12,31 @@ final class AllUserListViewModel: BaseViewModel {
     
     private let searchedUsersSubject = CurrentValueSubject<[GitHubUserEntity], Never>([])
     var searchedUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
-        return searchedUsersSubject.eraseToAnyPublisher()
+        searchedUsersSubject.eraseToAnyPublisher()
     }
-    var searchedUsers: [GitHubUserEntity] {
-        searchedUsersSubject.value
-    }
+    var searchedUsers: [GitHubUserEntity] { searchedUsersSubject.value }
     
     private let usecase: AllUserListUsecaseProtocol
-
+    
     init(usecase: AllUserListUsecaseProtocol) {
         self.usecase = usecase
         super.init(usecase: usecase)
+        bindFavorites()
+    }
+    
+    private func bindFavorites() {
+        usecase.favoriteUsersPublisher
+            .sink { [weak self] favorites in
+                guard let self = self else { return }
+                let favoriteIds = Set(favorites.map { $0.id })
+                let updated = self.searchedUsers.map { user -> GitHubUserEntity in
+                    var u = user
+                    u.isFavorite = favoriteIds.contains(u.id)
+                    return u
+                }
+                self.searchedUsersSubject.send(updated)
+            }
+            .store(in: &cancelBag)
     }
     
     func searchUsers(with query: String) async throws {
@@ -41,10 +55,5 @@ final class AllUserListViewModel: BaseViewModel {
     
     func toggleFavorite(_ user: GitHubUserEntity) throws {
         try usecase.toggleFavorite(user)
-        var current = searchedUsersSubject.value
-        if let index = current.firstIndex(where: { $0.id == user.id }) {
-            current[index].isFavorite.toggle()
-            searchedUsersSubject.send(current)
-        }
     }
 }

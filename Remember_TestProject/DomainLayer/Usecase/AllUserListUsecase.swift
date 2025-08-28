@@ -14,12 +14,12 @@ final class AllUserListUsecase {
     private var isEnd: Bool = false
     private var storedQuery: String = ""
     
+    private let repository: UserListRepositoryProtocol
+    private(set) var errorSubject = PassthroughSubject<Error, Never>()
+    
     var favoriteUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
         repository.favoriteUsersPublisher
     }
-    private(set) var errorSubject = PassthroughSubject<Error, Never>()
-    
-    private let repository: UserListRepositoryProtocol
     
     init(repository: UserListRepositoryProtocol) {
         self.repository = repository
@@ -36,24 +36,22 @@ extension AllUserListUsecase: AllUserListUsecaseProtocol {
     func loadNextPage(perPage: Int) async throws -> [GitHubUserEntity] {
         guard !isEnd else { return [] }
         
-        let (remoteUsers, totalCount) = try await repository.searchUsers(query: storedQuery, page: currentPage, perPage: perPage)
-        let favorites = repository.getFavoriteUsers()
-        let favoriteIds = Set(favorites.map { $0.id })
-        
-        let mappedUsers = remoteUsers.map { user -> GitHubUserEntity in
-            var u = user
-            u.isFavorite = favoriteIds.contains(u.id)
-            return u
+        do {
+            let (remoteUsers, totalCount) = try await repository.searchUsers(query: storedQuery,
+                                                                             page: currentPage,
+                                                                             perPage: perPage)
+            currentPage += 1
+            if (currentPage - 1) * perPage >= totalCount {
+                isEnd = true
+            }
+            
+            return remoteUsers
+        } catch {
+            errorSubject.send(error)
+            throw error
         }
-        
-        currentPage += 1
-        if (currentPage - 1) * perPage >= totalCount {
-            isEnd = true
-        }
-        
-        return mappedUsers
     }
-    
+
     func toggleFavorite(_ user: GitHubUserEntity) throws {
         do {
             if user.isFavorite {
@@ -68,11 +66,11 @@ extension AllUserListUsecase: AllUserListUsecaseProtocol {
     }
     
     func getErrorSubject() -> AnyPublisher<Error, Never> {
-        return errorSubject.eraseToAnyPublisher()
+        errorSubject.eraseToAnyPublisher()
     }
     
     private func resetPaging() {
-         currentPage = 1
-         isEnd = false
-     }
+        currentPage = 1
+        isEnd = false
+    }
 }
