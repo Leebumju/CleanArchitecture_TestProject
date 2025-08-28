@@ -16,7 +16,8 @@ final class GitHubUserCell: UICollectionViewCell {
     
     private lazy var avatarImageView: UIImageView = UIImageView().then {
         $0.image = UIImage(systemName: "person.circle.fill")?.tinted(.systemGray5)
-        $0.contentMode = .scaleAspectFit
+        $0.contentMode = .scaleAspectFill
+        $0.clipsToBounds = true
     }
     
     private lazy var userLoginLabel: UILabel = UILabel().then {
@@ -41,6 +42,11 @@ final class GitHubUserCell: UICollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
     }
     
     private func addViews() {
@@ -85,11 +91,11 @@ final class GitHubUserCell: UICollectionViewCell {
         userLoginLabel.text = gitHubUser.login
         favoriteButton.image = UIImage(systemName: "star.fill")?.tinted(gitHubUser.isFavorite ? .systemYellow : .systemGray5)
         
-        if gitHubUser.avatarURL.isEmpty {
+        if gitHubUser.avatarUrl.isEmpty {
             avatarImageView.image = UIImage(systemName: "person.circle.fill")?.tinted(.systemGray5)
         } else {
             avatarImageView.setImageWithSpinner(
-                urlString: gitHubUser.avatarURL,
+                urlString: gitHubUser.avatarUrl,
                 placeholder: UIImage(systemName: "person.circle.fill")?.tinted(.systemGray5)
             )
         }

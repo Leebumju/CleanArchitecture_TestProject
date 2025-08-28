@@ -8,6 +8,6 @@
 struct GitHubUserEntity {
     let id: Int
     let login: String
-    let avatarURL: String
+    let avatarUrl: String
     var isFavorite: Bool
 }

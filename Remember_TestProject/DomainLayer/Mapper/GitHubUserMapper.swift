@@ -13,7 +13,7 @@ struct GitHubUserMapper {
             GitHubUserEntity(
                 id: user.id ?? 0,
                 login: user.login ?? "",
-                avatarURL: user.avatarURL ?? "",
+                avatarUrl: user.avatarUrl ?? "",
                 isFavorite: false
             )
         }
@@ -25,7 +25,7 @@ struct GitHubUserMapper {
             GitHubUserEntity(
                 id: object.id,
                 login: object.login,
-                avatarURL: object.avatarURL,
+                avatarUrl: object.avatarUrl,
                 isFavorite: true
             )
         }

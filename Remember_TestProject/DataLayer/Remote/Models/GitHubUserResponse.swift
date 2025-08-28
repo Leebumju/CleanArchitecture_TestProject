@@ -15,5 +15,5 @@ struct GitHubUserResponse: Decodable {
 struct GitHubUser: Decodable {
     let id: Int?
     let login: String?
-    let avatarURL: String?
+    let avatarUrl: String?
 }

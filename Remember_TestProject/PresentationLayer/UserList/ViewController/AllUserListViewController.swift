@@ -87,7 +87,7 @@ final class AllUserListViewController: BaseViewController {
             guard let self = self else { return nil }
             let itemSize: NSCollectionLayoutSize
             
-            if viewModel.allSearchedUsers.isEmpty {
+            if viewModel.searchedUsers.isEmpty {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                   heightDimension: .fractionalHeight(1))
             } else {
@@ -111,6 +111,14 @@ final class AllUserListViewController: BaseViewController {
         }
     }
     
+    private func toggleFavorite(_ user: GitHubUserEntity) {
+        do {
+            CommonUtil.showLoadingView()
+            try viewModel.toggleFavorite(user)
+            CommonUtil.hideLoadingView()
+        } catch {}
+    }
+    
     @objc
     private func handleTapGesture() {
         view.endEditing(true)
@@ -131,7 +139,7 @@ extension AllUserListViewController: UITextFieldDelegate {
 
 extension AllUserListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let allSearchedUsers: [GitHubUserEntity] = viewModel.allSearchedUsers
+        let allSearchedUsers: [GitHubUserEntity] = viewModel.searchedUsers
         
         if allSearchedUsers.isEmpty {
             return 1
@@ -141,7 +149,7 @@ extension AllUserListViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let allSearchedUsers: [GitHubUserEntity] = viewModel.allSearchedUsers
+        let allSearchedUsers: [GitHubUserEntity] = viewModel.searchedUsers
         
         if allSearchedUsers.isEmpty {
             guard let cell = collectionView.dequeueReusableCell(NoSearchedDataCell.self, indexPath: indexPath) else { return .init() }
@@ -150,6 +158,9 @@ extension AllUserListViewController: UICollectionViewDataSource {
         } else {
             guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }
             cell.updateView(with: allSearchedUsers[indexPath.item])
+            cell.favoriteButton.didTapped { [weak self] in
+                self?.toggleFavorite(allSearchedUsers[indexPath.item])
+            }
             
             return cell
         }
