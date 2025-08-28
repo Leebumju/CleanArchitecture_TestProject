@@ -27,11 +27,6 @@ final class AllUserListUsecase {
 }
 
 extension AllUserListUsecase: AllUserListUsecaseProtocol {
-    func resetPaging() {
-         currentPage = 1
-         isEnd = false
-     }
-    
     func searchUsers(query: String, perPage: Int) async throws -> [GitHubUserEntity] {
         storedQuery = query
         resetPaging()
@@ -75,4 +70,9 @@ extension AllUserListUsecase: AllUserListUsecaseProtocol {
     func getErrorSubject() -> AnyPublisher<Error, Never> {
         return errorSubject.eraseToAnyPublisher()
     }
+    
+    private func resetPaging() {
+         currentPage = 1
+         isEnd = false
+     }
 }

@@ -23,21 +23,16 @@ struct Injector {
         }
         
         container.register(UserListRepositoryProtocol.self) { resolver in
-            let repository = UserListRepository(remoteDataFetcher: resolver.resolve(RemoteDataFetchable.self)!,
-                                              localDataFetcher: resolver.resolve(LocalDataFetchable.self)!)
+            let repository = UserListRepository(
+                remoteDataFetcher: resolver.resolve(RemoteDataFetchable.self)!,
+                localDataFetcher: resolver.resolve(LocalDataFetchable.self)!
+            )
             return repository
-        }
+        }.inObjectScope(.container)
         
         container.register(AllUserListUsecaseProtocol.self) { resolver in
             let usecase = AllUserListUsecase(repository: resolver.resolve(UserListRepositoryProtocol.self)!)
             return usecase
-        }
-        
-        
-        container.register(UserListRepositoryProtocol.self) { resolver in
-            let repository = UserListRepository(remoteDataFetcher: resolver.resolve(RemoteDataFetchable.self)!,
-                                              localDataFetcher: resolver.resolve(LocalDataFetchable.self)!)
-            return repository
         }
         
         container.register(FavoriteUserListUsecaseProtocol.self) { resolver in

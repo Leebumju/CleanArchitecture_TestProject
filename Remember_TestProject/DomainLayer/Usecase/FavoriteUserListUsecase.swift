@@ -9,6 +9,9 @@ import Foundation
 import Combine
 
 final class FavoriteUserListUsecase {
+    var favoriteUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
+        repository.favoriteUsersPublisher
+    }
     private(set) var errorSubject = PassthroughSubject<Error, Never>()
     
     private let repository: UserListRepositoryProtocol
@@ -19,6 +22,19 @@ final class FavoriteUserListUsecase {
 }
 
 extension FavoriteUserListUsecase: FavoriteUserListUsecaseProtocol {
+    func toggleFavorite(_ user: GitHubUserEntity) throws {
+        do {
+            if user.isFavorite {
+                try repository.removeFavorite(user)
+            } else {
+                try repository.addFavorite(user)
+            }
+        } catch {
+            errorSubject.send(error)
+            throw error
+        }
+    }
+    
     func getErrorSubject() -> AnyPublisher<Error, Never> {
         return errorSubject.eraseToAnyPublisher()
     }

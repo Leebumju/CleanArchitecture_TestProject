@@ -19,7 +19,7 @@ extension NetworkService: TargetType {
     
     var path: String {
         switch self {
-        case .searchUsers(let query):
+        case .searchUsers(_):
             return "/search/users"
         }
     }
@@ -35,7 +35,7 @@ extension NetworkService: TargetType {
         switch self {
         case .searchUsers(let request):
             let parameters: [String: Any] = [
-                "q": "\(request.query) in:name",
+                "q": "\(request.query) in:login",
                 "page": request.page,
                 "per_page": request.perPage
             ]

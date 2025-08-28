@@ -21,6 +21,9 @@ final class UserListRepository {
     init(remoteDataFetcher: RemoteDataFetchable, localDataFetcher: LocalDataFetchable) {
         self.remoteDataFetcher = remoteDataFetcher
         self.localDataFetcher = localDataFetcher
+        
+        let favorites = localDataFetcher.fetchFavoriteUsers()
+        favoriteUsersSubject.send(favorites)
     }
 }
 
