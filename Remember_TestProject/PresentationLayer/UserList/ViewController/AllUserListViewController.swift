@@ -12,10 +12,11 @@ import Combine
 
 final class AllUserListViewController: BaseViewController {
     private var cancelBag = Set<AnyCancellable>()
+    private let viewModel: AllUserListViewModel
     
     private(set) lazy var searchTextField: UITextField = UITextField().then {
         $0.addLeftPadding(moderateScale(number: 12))
-        $0.addRightPadding(moderateScale(number: 8 + 16 + 12))
+        $0.addRightPadding(moderateScale(number: 12))
         $0.backgroundColor = .systemGray6
         $0.layer.cornerRadius = moderateScale(number: 12)
         $0.textColor = .black
@@ -34,8 +35,6 @@ final class AllUserListViewController: BaseViewController {
         $0.backgroundColor = .white
     }
     
-    private let viewModel: AllUserListViewModel
-    
     init(viewModel: AllUserListViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -47,13 +46,11 @@ final class AllUserListViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         bind()
     }
     
     override func addViews() {
-        view.addSubviews([searchTextField,
-                          gitHubUserListView])
+        view.addSubviews([searchTextField, gitHubUserListView])
     }
     
     override func makeConstraints() {
@@ -78,8 +75,13 @@ final class AllUserListViewController: BaseViewController {
     private func bind() {
         viewModel.searchedUsersPublisher
             .droppedSink { [weak self] _ in
-                guard let self = self else { return }
-                gitHubUserListView.reloadData()
+                self?.gitHubUserListView.reloadData()
+            }.store(in: &cancelBag)
+        
+        viewModel.isLoadingPublisher
+            .mainSink { isLoading in
+                if isLoading { CommonUtil.showLoadingView() }
+                else { CommonUtil.hideLoadingView() }
             }.store(in: &cancelBag)
     }
     
@@ -88,44 +90,28 @@ final class AllUserListViewController: BaseViewController {
             guard let self = self else { return nil }
             let itemSize: NSCollectionLayoutSize
             
-            if viewModel.searchedUsers.isEmpty {
+            if self.viewModel.searchedUsers.isEmpty {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                                  heightDimension: .fractionalHeight(1))
+                                                  heightDimension: .estimated(moderateScale(number: 1)))
             } else {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                   heightDimension: .estimated(moderateScale(number: 60)))
             }
             
-            return CompositionalLayoutProvider.configureSectionLayout(withItemLayout: .init(size: itemSize),
-                                                                      groupLayout: .init(size: itemSize),
-                                                                      sectionLayout: .init())
+            return CompositionalLayoutProvider.configureSectionLayout(
+                withItemLayout: .init(size: itemSize),
+                groupLayout: .init(size: itemSize),
+                sectionLayout: .init()
+            )
         }
     }
     
     private func searchUsers(keyword: String) {
-        Task {
-            do {
-                CommonUtil.showLoadingView()
-                try await viewModel.searchUsers(with: keyword)
-                CommonUtil.hideLoadingView()
-            } catch {}
-        }
+        viewModel.searchUsers(keyword: keyword)
     }
     
     private func loadNextPage() {
-        Task {
-            do {
-                try await viewModel.loadNextPage()
-            } catch {}
-        }
-    }
-    
-    private func toggleFavorite(_ user: GitHubUserEntity) {
-        do {
-            CommonUtil.showLoadingView()
-            try viewModel.toggleFavorite(user)
-            CommonUtil.hideLoadingView()
-        } catch {}
+        viewModel.loadNextPage()
     }
     
     @objc
@@ -138,7 +124,6 @@ final class AllUserListViewController: BaseViewController {
 extension AllUserListViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        
         if let keyword = textField.text {
             searchUsers(keyword: keyword)
         }
@@ -146,29 +131,28 @@ extension AllUserListViewController: UITextFieldDelegate {
     }
 }
 
+// MARK: - UICollectionViewDataSource
 extension AllUserListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let allSearchedUsers: [GitHubUserEntity] = viewModel.searchedUsers
-        
-        if allSearchedUsers.isEmpty {
-            return 1
-        } else {
-            return allSearchedUsers.count
-        }
+        return viewModel.searchedUsers.isEmpty ? 1 : viewModel.searchedUsers.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let allSearchedUsers: [GitHubUserEntity] = viewModel.searchedUsers
-        
-        if allSearchedUsers.isEmpty {
-            guard let cell = collectionView.dequeueReusableCell(NoSearchedDataCell.self, indexPath: indexPath) else { return .init() }
-            
+        if viewModel.searchedUsers.isEmpty {
+            guard let cell = collectionView.dequeueReusableCell(NoSearchedDataCell.self, indexPath: indexPath) else {
+                return UICollectionViewCell()
+            }
             return cell
         } else {
-            guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }
-            cell.updateView(with: allSearchedUsers[indexPath.item])
+            guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else {
+                return UICollectionViewCell()
+            }
+            
+            let user = viewModel.searchedUsers[indexPath.item]
+            cell.updateView(with: user)
+            
             cell.favoriteButton.didTapped { [weak self] in
-                self?.toggleFavorite(allSearchedUsers[indexPath.item])
+                self?.viewModel.toggleFavorite(user)
             }
             
             return cell
@@ -176,10 +160,10 @@ extension AllUserListViewController: UICollectionViewDataSource {
     }
 }
 
+// MARK: - UICollectionViewDataSourcePrefetching
 extension AllUserListViewController: UICollectionViewDataSourcePrefetching {
     func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
         guard let maxIndex = indexPaths.map({ $0.item }).max() else { return }
-        
         if maxIndex >= viewModel.searchedUsers.count - 5 {
             loadNextPage()
         }
