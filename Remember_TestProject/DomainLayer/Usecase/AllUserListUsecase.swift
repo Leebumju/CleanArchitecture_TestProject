@@ -10,13 +10,16 @@ import Foundation
 import Combine
 
 final class AllUserListUsecase {
-    private(set) var errorSubject = PassthroughSubject<Error, Never>()
-    
-    private let repository: UserListRepositoryProtocol
+    private var currentPage: Int = 1
+    private var isEnd: Bool = false
+    private var storedQuery: String = ""
     
     var favoriteUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
         repository.favoriteUsersPublisher
     }
+    private(set) var errorSubject = PassthroughSubject<Error, Never>()
+    
+    private let repository: UserListRepositoryProtocol
     
     init(repository: UserListRepositoryProtocol) {
         self.repository = repository
@@ -24,16 +27,36 @@ final class AllUserListUsecase {
 }
 
 extension AllUserListUsecase: AllUserListUsecaseProtocol {
-    func searchUsers(with query: String) async throws -> [GitHubUserEntity] {
-        let remoteUsers = try await repository.searchUsers(with: query)
+    func resetPaging() {
+         currentPage = 1
+         isEnd = false
+     }
+    
+    func searchUsers(query: String, perPage: Int) async throws -> [GitHubUserEntity] {
+        storedQuery = query
+        resetPaging()
+        return try await loadNextPage(perPage: perPage)
+    }
+    
+    func loadNextPage(perPage: Int) async throws -> [GitHubUserEntity] {
+        guard !isEnd else { return [] }
+        
+        let (remoteUsers, totalCount) = try await repository.searchUsers(query: storedQuery, page: currentPage, perPage: perPage)
         let favorites = repository.getFavoriteUsers()
         let favoriteIds = Set(favorites.map { $0.id })
-
-        return remoteUsers.map {
-            var u = $0
+        
+        let mappedUsers = remoteUsers.map { user -> GitHubUserEntity in
+            var u = user
             u.isFavorite = favoriteIds.contains(u.id)
             return u
         }
+        
+        currentPage += 1
+        if (currentPage - 1) * perPage >= totalCount {
+            isEnd = true
+        }
+        
+        return mappedUsers
     }
     
     func toggleFavorite(_ user: GitHubUserEntity) throws {

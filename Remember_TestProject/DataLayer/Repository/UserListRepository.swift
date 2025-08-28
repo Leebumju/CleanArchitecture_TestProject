@@ -25,9 +25,14 @@ final class UserListRepository {
 }
 
 extension UserListRepository: UserListRepositoryProtocol {
-    func searchUsers(with query: String) async throws -> [GitHubUserEntity] {
-        let response = try await remoteDataFetcher.searchUsers(with: query)
-        return GitHubUserMapper.gitHubUserResponsetoEntity(response)
+    func searchUsers(query: String, page: Int, perPage: Int) async throws -> (users: [GitHubUserEntity], totalCount: Int) {
+        let request: GitHubUserRequest = GitHubUserRequest(query: query,
+                                                           page: page,
+                                                           perPage: perPage)
+        let response = try await remoteDataFetcher.searchUsers(with: request)
+        let users = GitHubUserMapper.gitHubUserResponsetoEntity(response)
+        let totalCount = response.totalCount ?? 0
+        return (users, totalCount)
     }
     
     func addFavorite(_ user: GitHubUserEntity) throws {

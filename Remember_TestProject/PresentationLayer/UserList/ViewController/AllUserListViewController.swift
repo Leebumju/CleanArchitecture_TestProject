@@ -28,6 +28,7 @@ final class AllUserListViewController: BaseViewController {
     private lazy var gitHubUserListView: UICollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout()).then {
         $0.showsVerticalScrollIndicator = false
         $0.dataSource = self
+        $0.prefetchDataSource = self
         $0.registerCell(NoSearchedDataCell.self)
         $0.registerCell(GitHubUserCell.self)
         $0.backgroundColor = .white
@@ -111,6 +112,14 @@ final class AllUserListViewController: BaseViewController {
         }
     }
     
+    private func loadNextPage() {
+        Task {
+            do {
+                try await viewModel.loadNextPage()
+            } catch {}
+        }
+    }
+    
     private func toggleFavorite(_ user: GitHubUserEntity) {
         do {
             CommonUtil.showLoadingView()
@@ -163,6 +172,16 @@ extension AllUserListViewController: UICollectionViewDataSource {
             }
             
             return cell
+        }
+    }
+}
+
+extension AllUserListViewController: UICollectionViewDataSourcePrefetching {
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        guard let maxIndex = indexPaths.map({ $0.item }).max() else { return }
+        
+        if maxIndex >= viewModel.searchedUsers.count - 5 {
+            loadNextPage()
         }
     }
 }

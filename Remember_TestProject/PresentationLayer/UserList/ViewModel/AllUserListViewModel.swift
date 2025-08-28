@@ -8,6 +8,8 @@
 import Combine
 
 final class AllUserListViewModel: BaseViewModel {
+    private var isLoading: Bool = false
+    
     private let searchedUsersSubject = CurrentValueSubject<[GitHubUserEntity], Never>([])
     var searchedUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
         return searchedUsersSubject.eraseToAnyPublisher()
@@ -24,8 +26,17 @@ final class AllUserListViewModel: BaseViewModel {
     }
     
     func searchUsers(with query: String) async throws {
-        let users = try await usecase.searchUsers(with: query)
+        let users = try await usecase.searchUsers(query: query, perPage: 30)
         searchedUsersSubject.send(users)
+    }
+    
+    func loadNextPage() async throws {
+        guard !isLoading else { return }
+        isLoading = true
+        defer { isLoading = false }
+        
+        let users = try await usecase.loadNextPage(perPage: 30)
+        searchedUsersSubject.send(searchedUsers + users)
     }
     
     func toggleFavorite(_ user: GitHubUserEntity) throws {

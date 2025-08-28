@@ -10,6 +10,7 @@ import Combine
 protocol AllUserListUsecaseProtocol: BaseUsecaseProtocol {
     var favoriteUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> { get }
     
-    func searchUsers(with query: String) async throws -> [GitHubUserEntity]
+    func searchUsers(query: String, perPage: Int) async throws -> [GitHubUserEntity]
+    func loadNextPage(perPage: Int) async throws -> [GitHubUserEntity]
     func toggleFavorite(_ user: GitHubUserEntity) throws
 }

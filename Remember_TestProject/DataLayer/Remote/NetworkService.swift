@@ -9,7 +9,7 @@ import Foundation
 import Moya
 
 enum NetworkService {
-    case searchUsers(query: String)
+    case searchUsers(request: GitHubUserRequest)
 }
 
 extension NetworkService: TargetType {
@@ -32,11 +32,15 @@ extension NetworkService: TargetType {
     }
     
     var task: Moya.Task {
-         switch self {
-         case .searchUsers(let query):
-             let parameters = ["q": "\(query) in:name"]
-             return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
-         }
+        switch self {
+        case .searchUsers(let request):
+            let parameters: [String: Any] = [
+                "q": "\(request.query) in:name",
+                "page": request.page,
+                "per_page": request.perPage
+            ]
+            return .requestParameters(parameters: parameters, encoding: URLEncoding.default)
+        }
     }
     
     var headers: [String : String]? {
