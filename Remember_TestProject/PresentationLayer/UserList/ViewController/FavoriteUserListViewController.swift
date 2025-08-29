@@ -77,6 +77,11 @@ final class FavoriteUserListViewController: BaseViewController {
     }
     
     private func bind() {
+//        viewModel.getErrorSubject()
+//            .mainSink { [weak self] error in
+//                self?.showToastMessageView(title: error.localizedDescription)
+//            }.store(in: &cancelBag)
+        
         viewModel.favoriteUsersPublisher
             .droppedSink { [weak self] _ in
                 guard let self = self else { return }

@@ -14,7 +14,7 @@ enum NetworkService {
 
 extension NetworkService: TargetType {
     var baseURL: URL {
-        return URL(string: "https://api.github.com")!
+        return URL(string: "https://api.gitub.com")!
     }
     
     var path: String {

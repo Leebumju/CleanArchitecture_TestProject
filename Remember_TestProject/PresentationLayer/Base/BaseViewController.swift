@@ -33,13 +33,20 @@ class BaseViewController: UIViewController {
     
     func showToastMessageView(title: String?, duration: TimeInterval = 2, bottomInset: CGFloat = moderateScale(number: 40), completion: (() -> Void)? = nil) {
         guard let title = title else { return }
-        
-        let toastView = ToastMessageView(title: title,
-                                         bottomInset: bottomInset)
-        view.addSubview(toastView)
-        view.bringSubviewToFront(toastView)
+
+        let toastView = ToastMessageView(title: title, bottomInset: bottomInset)
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
+            window.addSubview(toastView)
+            window.bringSubviewToFront(toastView)
+        } else {
+            view.addSubview(toastView)
+            view.bringSubviewToFront(toastView)
+        }
+
         toastView.alpha = 0
-        
+
         UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseIn) {
             toastView.alpha = 1
         } completion: { _ in

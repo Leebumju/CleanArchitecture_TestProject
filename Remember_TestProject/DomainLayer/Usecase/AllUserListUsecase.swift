@@ -35,38 +35,23 @@ extension AllUserListUsecase: AllUserListUsecaseProtocol {
     
     func loadNextPage(perPage: Int) async throws -> [GitHubUserEntity] {
         guard !isEnd else { return [] }
+        let (remoteUsers, totalCount) = try await repository.searchUsers(
+            query: storedQuery,
+            page: currentPage,
+            perPage: perPage
+        )
         
-        do {
-            let (remoteUsers, totalCount) = try await repository.searchUsers(query: storedQuery,
-                                                                             page: currentPage,
-                                                                             perPage: perPage)
-            currentPage += 1
-            if (currentPage - 1) * perPage >= totalCount {
-                isEnd = true
-            }
-            
-            return remoteUsers
-        } catch {
-            errorSubject.send(error)
-            throw error
-        }
+        currentPage += 1
+        if (currentPage - 1) * perPage >= totalCount { isEnd = true }
+        return remoteUsers
     }
 
     func toggleFavorite(_ user: GitHubUserEntity) throws {
-        do {
-            if user.isFavorite {
-                try repository.removeFavorite(user)
-            } else {
-                try repository.addFavorite(user)
-            }
-        } catch {
-            errorSubject.send(error)
-            throw error
+        if user.isFavorite {
+            try repository.removeFavorite(user)
+        } else {
+            try repository.addFavorite(user)
         }
-    }
-    
-    func getErrorSubject() -> AnyPublisher<Error, Never> {
-        errorSubject.eraseToAnyPublisher()
     }
     
     private func resetPaging() {

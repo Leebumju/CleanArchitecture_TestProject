@@ -16,10 +16,6 @@ class BaseViewModel {
         self.usecase = usecase
     }
     
-    func getErrorSubject() -> AnyPublisher<Error, Never> {
-        return usecase.getErrorSubject()
-    }
-    
     deinit {
         print("⚡ deinit ---> \(self)")
     }

@@ -11,9 +11,11 @@ import Then
 import Combine
 
 final class AllUserListViewController: BaseViewController {
+    // MARK: - Properties
     private var cancelBag = Set<AnyCancellable>()
     private let viewModel: AllUserListViewModel
     
+    // MARK: - UI Components
     private(set) lazy var searchTextField: UITextField = UITextField().then {
         $0.addLeftPadding(moderateScale(number: 12))
         $0.addRightPadding(moderateScale(number: 12))
@@ -35,6 +37,7 @@ final class AllUserListViewController: BaseViewController {
         $0.backgroundColor = .white
     }
     
+    // MARK: - Life Cycle
     init(viewModel: AllUserListViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
@@ -49,6 +52,7 @@ final class AllUserListViewController: BaseViewController {
         bind()
     }
     
+    // MARK: - Setup & Bindings
     override func addViews() {
         view.addSubviews([searchTextField, gitHubUserListView])
     }
@@ -73,6 +77,11 @@ final class AllUserListViewController: BaseViewController {
     }
     
     private func bind() {
+        viewModel.errorPublisher
+            .mainSink { [weak self] error in
+                self?.showToastMessageView(title: error.localizedDescription)
+            }.store(in: &cancelBag)
+        
         viewModel.searchedUsersPublisher
             .droppedSink { [weak self] _ in
                 self?.gitHubUserListView.reloadData()
@@ -85,6 +94,7 @@ final class AllUserListViewController: BaseViewController {
             }.store(in: &cancelBag)
     }
     
+    // MARK: - Layout
     private func layout() -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { [weak self] _, _ in
             guard let self = self else { return nil }
@@ -92,7 +102,7 @@ final class AllUserListViewController: BaseViewController {
             
             if self.viewModel.searchedUsers.isEmpty {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                                  heightDimension: .estimated(moderateScale(number: 1)))
+                                                  heightDimension: .fractionalHeight(1))
             } else {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                   heightDimension: .estimated(moderateScale(number: 60)))
@@ -106,6 +116,7 @@ final class AllUserListViewController: BaseViewController {
         }
     }
     
+    // MARK: - Actions
     private func searchUsers(keyword: String) {
         viewModel.searchUsers(keyword: keyword)
     }
