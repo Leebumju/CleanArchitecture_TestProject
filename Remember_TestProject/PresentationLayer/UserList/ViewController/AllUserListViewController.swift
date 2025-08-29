@@ -93,6 +93,7 @@ private extension AllUserListViewController {
 private extension AllUserListViewController {
     func searchUsers(keyword: String) { viewModel.searchUsers(keyword: keyword) }
     func loadNextPage() { viewModel.loadNextPage() }
+    func toggleFavorite(user: GitHubUserEntity) { viewModel.toggleFavorite(user) }
 
     @objc func dismissKeyboard() { view.endEditing(true) }
 }
@@ -120,7 +121,10 @@ extension AllUserListViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }
             let user = viewModel.searchedUsers[indexPath.item]
             cell.updateView(with: user)
-            cell.favoriteButton.didTapped { [weak self] in self?.viewModel.toggleFavorite(user) }
+            cell.favoriteButton.didTapped { [weak self] in
+                self?.toggleFavorite(user: user)
+            }
+            
             return cell
         }
     }

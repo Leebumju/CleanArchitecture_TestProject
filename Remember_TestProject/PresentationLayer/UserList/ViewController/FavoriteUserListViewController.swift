@@ -22,13 +22,12 @@ final class FavoriteUserListViewController: BaseViewController {
         $0.setCustomPlaceholder(placeholder: "검색어를 입력하세요.",
                                 color: .systemGray3,
                                 font: FontManager.body2M.font)
-        $0.delegate = self
+        $0.addTarget(self, action: #selector(textDidChange(_:)), for: .editingChanged)
     }
     
     private lazy var favoriteUserListView: UICollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout()).then {
         $0.showsVerticalScrollIndicator = false
         $0.dataSource = self
-//        $0.prefetchDataSource = self
         $0.registerCell(NoSearchedDataCell.self)
         $0.registerCell(GitHubUserCell.self)
         $0.registerSupplimentaryView(FavoriteUserSectionHeader.self,
@@ -78,10 +77,10 @@ final class FavoriteUserListViewController: BaseViewController {
     }
     
     private func bind() {
-//        viewModel.getErrorSubject()
-//            .mainSink { [weak self] error in
-//                self?.showToastMessageView(title: error.localizedDescription)
-//            }.store(in: &cancelBag)
+        viewModel.errorPublisher
+            .mainSink { [weak self] error in
+                self?.showToastMessageView(title: error.localizedDescription)
+            }.store(in: &cancelBag)
         
         viewModel.favoriteUsersSectionsPublisher
             .droppedSink { [weak self] _ in
@@ -113,18 +112,20 @@ final class FavoriteUserListViewController: BaseViewController {
         }
     }
     
-    private func toggleFavorite(_ user: GitHubUserEntity) {
-        do {
-            CommonUtil.showLoadingView()
-            try viewModel.toggleFavorite(user)
-            CommonUtil.hideLoadingView()
-        } catch {}
-    }
-    
     @objc
     private func handleTapGesture() {
         view.endEditing(true)
     }
+    
+    @objc
+    private func textDidChange(_ sender: UITextField) {
+        searchUsers(keyword: sender.text ?? "")
+    }
+}
+
+// MARK: - Actions
+private extension FavoriteUserListViewController {
+    func searchUsers(keyword: String) { viewModel.searchUsers(keyword: keyword) }
 }
 
 
@@ -132,11 +133,10 @@ final class FavoriteUserListViewController: BaseViewController {
 extension FavoriteUserListViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        
+        if let keyword = textField.text { searchUsers(keyword: keyword) }
         return true
     }
 }
-
 
 extension FavoriteUserListViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -181,7 +181,7 @@ extension FavoriteUserListViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }
             cell.updateView(with: user)
             cell.favoriteButton.didTapped { [weak self] in
-                self?.toggleFavorite(user)
+                self?.viewModel.toggleFavorite(user)
             }
             
             return cell
