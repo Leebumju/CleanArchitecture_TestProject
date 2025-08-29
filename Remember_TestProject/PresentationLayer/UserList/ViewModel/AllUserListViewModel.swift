@@ -8,17 +8,21 @@
 import Combine
 
 final class AllUserListViewModel: BaseViewModel {
+    private var favoriteUsers: [GitHubUserEntity] = []
     // MARK: - Publishers
     private let searchedUsersSubject = CurrentValueSubject<[GitHubUserEntity], Never>([])
     var searchedUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
         searchedUsersSubject.eraseToAnyPublisher()
     }
-    var searchedUsers: [GitHubUserEntity] { searchedUsersSubject.value }
+    var searchedUsers: [GitHubUserEntity] {
+        searchedUsersSubject.value
+    }
     
     private let isLoadingSubject = CurrentValueSubject<Bool, Never>(false)
     var isLoadingPublisher: AnyPublisher<Bool, Never> {
         isLoadingSubject.eraseToAnyPublisher()
     }
+    private(set) var isPaging: Bool = false
     
     private let errorSubject = PassthroughSubject<Error, Never>()
     var errorPublisher: AnyPublisher<Error, Never> {
@@ -39,6 +43,7 @@ final class AllUserListViewModel: BaseViewModel {
         usecase.favoriteUsersPublisher
             .sink { [weak self] favorites in
                 guard let self = self else { return }
+                self.favoriteUsers = favorites
                 let favoriteIds = Set(favorites.map { $0.id })
                 let updated = self.searchedUsers.map { user -> GitHubUserEntity in
                     var u = user
@@ -52,31 +57,37 @@ final class AllUserListViewModel: BaseViewModel {
     
     // MARK: - Search Users
     func searchUsers(keyword: String) {
+        guard !isLoadingSubject.value else { return }
+        isLoadingSubject.send(true)
+        isPaging = false
+        
         Task {
+            defer { isLoadingSubject.send(false) }
             do {
-                isLoadingSubject.send(true)
                 let users = try await usecase.searchUsers(query: keyword, perPage: 30)
-                searchedUsersSubject.send(users)
+                let updatedUsers = updateFavorites(for: users)
+                searchedUsersSubject.send(updatedUsers)
             } catch {
                 errorSubject.send(error)
             }
-            isLoadingSubject.send(false)
         }
     }
     
     // MARK: - Load Next Page
     func loadNextPage() {
         guard !isLoadingSubject.value else { return }
-        
+        isLoadingSubject.send(true)
+        isPaging = true
+
         Task {
+            defer { isLoadingSubject.send(false) }
             do {
-                isLoadingSubject.send(true)
                 let users = try await usecase.loadNextPage(perPage: 30)
-                searchedUsersSubject.send(searchedUsers + users)
+                let updatedUsers = updateFavorites(for: searchedUsers + users)
+                searchedUsersSubject.send(updatedUsers)
             } catch {
                 errorSubject.send(error)
             }
-            isLoadingSubject.send(false)
         }
     }
     
@@ -86,6 +97,15 @@ final class AllUserListViewModel: BaseViewModel {
             try usecase.toggleFavorite(user)
         } catch {
             errorSubject.send(error)
+        }
+    }
+    
+    private func updateFavorites(for users: [GitHubUserEntity]) -> [GitHubUserEntity] {
+        let favoriteIds = Set(favoriteUsers.map { $0.id })
+        return users.map { user -> GitHubUserEntity in
+            var u = user
+            u.isFavorite = favoriteIds.contains(u.id)
+            return u
         }
     }
 }
