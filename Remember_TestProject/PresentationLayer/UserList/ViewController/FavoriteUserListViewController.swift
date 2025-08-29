@@ -11,7 +11,6 @@ import Then
 import Combine
 
 final class FavoriteUserListViewController: BaseViewController {
-    let temp = 1
     private var cancelBag = Set<AnyCancellable>()
     
     private(set) lazy var searchTextField: UITextField = UITextField().then {
@@ -32,6 +31,8 @@ final class FavoriteUserListViewController: BaseViewController {
 //        $0.prefetchDataSource = self
         $0.registerCell(NoSearchedDataCell.self)
         $0.registerCell(GitHubUserCell.self)
+        $0.registerSupplimentaryView(FavoriteUserSectionHeader.self,
+                                     supplementaryViewOfKind: .header)
         $0.backgroundColor = .white
     }
     
@@ -82,7 +83,7 @@ final class FavoriteUserListViewController: BaseViewController {
 //                self?.showToastMessageView(title: error.localizedDescription)
 //            }.store(in: &cancelBag)
         
-        viewModel.favoriteUsersPublisher
+        viewModel.favoriteUsersSectionsPublisher
             .droppedSink { [weak self] _ in
                 guard let self = self else { return }
                 favoriteUserListView.reloadData()
@@ -93,18 +94,22 @@ final class FavoriteUserListViewController: BaseViewController {
         return UICollectionViewCompositionalLayout { [weak self] _, _ in
             guard let self = self else { return nil }
             let itemSize: NSCollectionLayoutSize
+            var headerSize: NSCollectionLayoutSize? = nil
             
             if viewModel.favoriteUsers.isEmpty {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
                                                   heightDimension: .fractionalHeight(1))
             } else {
                 itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
-                                                  heightDimension: .estimated(moderateScale(number: 60)))
+                                                  heightDimension: .absolute(moderateScale(number: 60)))
+                headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1),
+                                                    heightDimension: .absolute(moderateScale(number: 20)))
+                
             }
             
             return CompositionalLayoutProvider.configureSectionLayout(withItemLayout: .init(size: itemSize),
                                                                       groupLayout: .init(size: itemSize),
-                                                                      sectionLayout: .init())
+                                                                      sectionLayout: .init(headerSize: headerSize))
         }
     }
     
@@ -134,18 +139,39 @@ extension FavoriteUserListViewController: UITextFieldDelegate {
 
 
 extension FavoriteUserListViewController: UICollectionViewDataSource {
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return viewModel.favoriteUsers.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        if kind == UICollectionView.elementKindSectionHeader {
+            guard let headerView = collectionView.dequeueSupplimentaryView(FavoriteUserSectionHeader.self,
+                                                                           supplementaryViewOfKind: .header,
+                                                                           indexPath: indexPath) else {
+                return .init()
+            }
+            
+            let section = viewModel.favoriteUsers[indexPath.section]
+            headerView.updateView(with: section.title)
+            return headerView
+        }
+        return .init()
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let favoriteUsers: [GitHubUserEntity] = viewModel.favoriteUsers
+        let favoriteUsers = viewModel.favoriteUsers
         
         if favoriteUsers.isEmpty {
             return 1
         } else {
-            return favoriteUsers.count
+            return favoriteUsers[section].users.count
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let favoriteUsers: [GitHubUserEntity] = viewModel.favoriteUsers
+        let favoriteUsers = viewModel.favoriteUsers
+        let section = favoriteUsers[indexPath.section]
+        let user = section.users[indexPath.item]
         
         if favoriteUsers.isEmpty {
             guard let cell = collectionView.dequeueReusableCell(NoSearchedDataCell.self, indexPath: indexPath) else { return .init() }
@@ -153,9 +179,9 @@ extension FavoriteUserListViewController: UICollectionViewDataSource {
             return cell
         } else {
             guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }
-            cell.updateView(with: favoriteUsers[indexPath.item])
+            cell.updateView(with: user)
             cell.favoriteButton.didTapped { [weak self] in
-                self?.toggleFavorite(favoriteUsers[indexPath.item])
+                self?.toggleFavorite(user)
             }
             
             return cell

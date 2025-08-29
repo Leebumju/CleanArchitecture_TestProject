@@ -12,7 +12,7 @@ import SnapKit
 final class FavoriteUserSectionHeader: UICollectionReusableView {
     private lazy var titleLabel = UILabel().then {
         $0.attributedText = FontManager.body3M.setFont(alignment: .left)
-        $0.textColor = .systemGray5
+        $0.textColor = .systemGray
     }
     
     override init(frame: CGRect) {

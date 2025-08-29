@@ -76,7 +76,7 @@ private extension AllUserListViewController {
     func bindLoading() {
         viewModel.isLoadingPublisher
             .mainSink { isLoading in
-                if self.viewModel.isPaging { return }
+                guard !self.viewModel.isPaging else { return }
                 isLoading ? CommonUtil.showLoadingView() : CommonUtil.hideLoadingView()
             }.store(in: &cancelBag)
     }
