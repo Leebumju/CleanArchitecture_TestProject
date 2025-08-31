@@ -36,8 +36,8 @@ final class GitHubUserCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        addViews()
-        makeConstraints()
+        setupViews()
+        setupConstraints()
     }
     
     required init?(coder: NSCoder) {
@@ -49,7 +49,7 @@ final class GitHubUserCell: UICollectionViewCell {
         avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
     }
     
-    private func addViews() {
+    private func setupViews() {
         addSubview(containerView)
         containerView.addSubviews([avatarImageView,
                                    userLoginLabel,
@@ -57,7 +57,7 @@ final class GitHubUserCell: UICollectionViewCell {
                                    dividerView])
     }
     
-    private func makeConstraints() {
+    private func setupConstraints() {
         containerView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }

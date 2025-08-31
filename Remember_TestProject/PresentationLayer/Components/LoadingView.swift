@@ -22,8 +22,8 @@ final class LoadingView: UIView {
     init() {
         super.init(frame: UIScreen.main.bounds)
         
-        addViews()
-        makeConstraints()
+        setupViews()
+        setupConstraints()
         
         animationView.play()
     }
@@ -33,12 +33,12 @@ final class LoadingView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private func addViews() {
+    private func setupViews() {
         addSubview(backgroundView)
         backgroundView.addSubview(animationView)
     }
     
-    private func makeConstraints() {
+    private func setupConstraints() {
         backgroundView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }

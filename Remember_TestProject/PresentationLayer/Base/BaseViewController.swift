@@ -14,8 +14,8 @@ class BaseViewController: UIViewController {
         view.backgroundColor = .white
         navigationController?.navigationBar.isHidden = true
         
-        addViews()
-        makeConstraints()
+        setupViews()
+        setupConstraints()
         setupIfNeeded()
     }
     
@@ -23,9 +23,9 @@ class BaseViewController: UIViewController {
         deinitialize()
     }
     
-    func addViews() {}
+    func setupViews() {}
     
-    func makeConstraints() {}
+    func setupConstraints() {}
     
     func setupIfNeeded() {}
     

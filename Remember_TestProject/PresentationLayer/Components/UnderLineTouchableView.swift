@@ -21,8 +21,8 @@ final class UnderLineTouchableView: TouchableView {
     init(_ title: String?) {
         super.init(frame: .zero)
         self.titleLabel.text = title
-        addViews()
-        makeConstraints()
+        setupViews()
+        setupConstraints()
     }
     
     @available(*, unavailable)
@@ -30,12 +30,12 @@ final class UnderLineTouchableView: TouchableView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private func addViews() {
+    private func setupViews() {
         addSubviews([containerView, underlineView])
         containerView.addSubview(titleLabel)
     }
     
-    private func makeConstraints() {
+    private func setupConstraints() {
         containerView.snp.makeConstraints {
             $0.top.bottom.equalToSuperview().inset(moderateScale(number: 10))
             $0.leading.trailing.equalToSuperview().inset(moderateScale(number: 16))

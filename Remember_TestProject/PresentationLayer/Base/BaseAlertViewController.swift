@@ -9,18 +9,20 @@ import UIKit
 import Then
 import SnapKit
 
-class BaseAlertViewController: UIViewController {
+final class BaseAlertViewController: UIViewController {
 
+    // MARK: - Properties
     private lazy var backgroundView = UIView(frame: UIScreen.main.bounds).then {
         $0.backgroundColor = .black.withAlphaComponent(0.6)
     }
-    
+
     private lazy var containerView = UIView().then {
         $0.backgroundColor = .white
         $0.layer.cornerRadius = moderateScale(number: 16)
         $0.clipsToBounds = true
     }
-    
+
+    // MARK: - UI Components
     private lazy var confirmButton = TouchableLabel().then {
         $0.text = "확인"
         $0.textColor = .white
@@ -36,82 +38,73 @@ class BaseAlertViewController: UIViewController {
         $0.backgroundColor = .white
         $0.alignment = .center
         $0.isLayoutMarginsRelativeArrangement = true
-        $0.layoutMargins = UIEdgeInsets(top: moderateScale(number: 24),
-                                        left: moderateScale(number: 24),
-                                        bottom: moderateScale(number: 24),
-                                        right: moderateScale(number: 24))
+        $0.layoutMargins = UIEdgeInsets(
+            top: moderateScale(number: 24),
+            left: moderateScale(number: 24),
+            bottom: moderateScale(number: 24),
+            right: moderateScale(number: 24)
+        )
     }
-    
+
     private(set) lazy var titleLabel = UILabel().then {
         $0.textColor = .black
         $0.numberOfLines = 0
     }
-    
+
     private(set) lazy var descriptionLabel = UILabel().then {
         $0.textColor = .black
         $0.numberOfLines = 0
     }
-    
+
+    // MARK: - Life Cycle
     init() {
         super.init(nibName: nil, bundle: nil)
-        
-        addViews()
-        makeConstraints()
+        setupViews()
+        setupConstraints()
     }
-    
+
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
-    
-    func bind(title: String?,
-              description: String?,
-              submitText: String? = nil,
-              submitCompletion: (() -> Void)?) {
-        confirmButton.didTapped { [weak self] in
-            self?.dismiss(animated: false)
-            submitCompletion?()
-        }
-
-        titleLabel.text = title
-        
-        if let description = description {
-            descriptionLabel.isHidden = false
-            descriptionLabel.text = description
-        } else {
-            descriptionLabel.isHidden = true
-        }
-        
-        if let submitText = submitText {
-            confirmButton.text = submitText
-        }
-    }
-    
-    func addViews() {
+    // MARK: - Setup
+    private func setupViews() {
         view.addSubviews([backgroundView, containerView])
         containerView.addSubviews([titleStackView, confirmButton])
         titleStackView.addArrangedSubviews([titleLabel, descriptionLabel])
     }
-    
-    func makeConstraints() {
-        backgroundView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
-        
+
+    private func setupConstraints() {
+        backgroundView.snp.makeConstraints { $0.edges.equalToSuperview() }
+
         containerView.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview().inset(moderateScale(number: 30))
             $0.center.equalToSuperview()
         }
-        
+
+        titleStackView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+        }
+
         confirmButton.snp.makeConstraints {
             $0.top.equalTo(titleStackView.snp.bottom)
             $0.height.equalTo(moderateScale(number: 52))
             $0.leading.trailing.bottom.equalToSuperview().inset(moderateScale(number: 24))
         }
-        
-        titleStackView.snp.makeConstraints {
-            $0.top.leading.trailing.equalToSuperview()
+    }
+    
+    // MARK: - Binding
+    func bind(title: String?,
+              description: String?,
+              submitText: String? = nil,
+              submitCompletion: (() -> Void)? = nil) {
+        confirmButton.didTapped { [weak self] in
+            self?.dismiss(animated: false)
+            submitCompletion?()
         }
+        
+        titleLabel.text = title
+        descriptionLabel.isHidden = description == nil
+        descriptionLabel.text = description
+        if let submitText = submitText { confirmButton.text = submitText }
     }
 }

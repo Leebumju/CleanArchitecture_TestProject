@@ -28,8 +28,8 @@ final class ToastMessageView: UIView {
         
         self.isUserInteractionEnabled = true
         
-        addViews()
-        makeConstraints(with: bottomInset)
+        setupViews()
+        setupConstraints(with: bottomInset)
         self.bottomInset = bottomInset
     }
     
@@ -58,12 +58,12 @@ final class ToastMessageView: UIView {
         }
     }
     
-    private func addViews() {
+    private func setupViews() {
         addSubviews([backgroundView])
         backgroundView.addSubviews([titleLabel])
     }
     
-    private func makeConstraints(with bottomInset: CGFloat) {
+    private func setupConstraints(with bottomInset: CGFloat) {
         backgroundView.snp.makeConstraints {
             $0.centerX.equalToSuperview()
             $0.bottom.equalToSuperview().inset(getSafeAreaBottom() + bottomInset)

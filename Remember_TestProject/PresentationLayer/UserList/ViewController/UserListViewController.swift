@@ -51,7 +51,7 @@ final class UserListViewController: BaseViewController, AppCoordinated {
         super.viewDidLoad()
     }
     
-    override func addViews() {
+    override func setupViews() {
         view.addSubviews([titleLabel,
                           userListTabs])
         addChild(pageViewController)
@@ -59,7 +59,7 @@ final class UserListViewController: BaseViewController, AppCoordinated {
         pageViewController.didMove(toParent: self)
     }
     
-    override func makeConstraints() {
+    override func setupConstraints() {
         titleLabel.snp.makeConstraints {
             $0.top.equalToSuperview().inset(moderateScale(number: 20) + getSafeAreaTop())
             $0.leading.trailing.equalToSuperview().inset(moderateScale(number: 20))

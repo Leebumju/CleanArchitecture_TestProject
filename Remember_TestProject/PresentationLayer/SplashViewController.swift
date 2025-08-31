@@ -23,20 +23,17 @@ final class SplashViewController: BaseViewController, AppCoordinated {
         super.viewDidLoad()
     }
     
-    override func addViews() {
-        super.addViews()
+    override func setupViews() {
         view.addSubview(titleLabel)
     }
     
-    override func makeConstraints() {
-        super.makeConstraints()
+    override func setupConstraints() {
         titleLabel.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
     }
     
     override func setupIfNeeded() {
-        super.setupIfNeeded()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.coordinator?.moveTo(.userListFlow, userData: nil)
         }

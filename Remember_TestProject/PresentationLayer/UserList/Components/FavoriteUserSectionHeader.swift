@@ -18,8 +18,8 @@ final class FavoriteUserSectionHeader: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        addViews()
-        makeConstraints()
+        setupViews()
+        setupConstraints()
     }
     
     @available(*, unavailable)
@@ -27,11 +27,11 @@ final class FavoriteUserSectionHeader: UICollectionReusableView {
         super.init(coder: coder)
     }
     
-    private func addViews() {
+    private func setupViews() {
         addSubview(titleLabel)
     }
     
-    private func makeConstraints() {
+    private func setupConstraints() {
         titleLabel.snp.makeConstraints {
             $0.centerY.equalToSuperview()
             $0.leading.trailing.equalToSuperview().offset(moderateScale(number: 12))

@@ -38,12 +38,12 @@ final class FavoriteUserListViewController: BaseViewController {
     }
 
     // MARK: - Setup
-    override func addViews() {
+    override func setupViews() {
         view.addSubviews([searchTextField,
                           favoriteUserListView])
     }
 
-    override func makeConstraints() {
+    override func setupConstraints() {
         searchTextField.snp.makeConstraints {
             $0.top.equalToSuperview().offset(moderateScale(number: 12))
             $0.leading.trailing.equalToSuperview().inset(moderateScale(number: 20))
