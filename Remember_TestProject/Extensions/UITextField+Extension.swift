@@ -28,8 +28,11 @@ extension UITextField {
     
     func setCustomPlaceholder(placeholder: String?, color: UIColor?, font: UIFont?) {
         guard let placeholder = placeholder else { return }
+        var attributes: [NSAttributedString.Key: Any] = [:]
+        if let color = color { attributes[.foregroundColor] = color }
+        if let font = font { attributes[.font] = font }
+        
         self.attributedPlaceholder = NSAttributedString(string: placeholder,
-                                                        attributes: [.foregroundColor: color,
-                                                                     .font: font])
+                                                        attributes: attributes)
     }
 }

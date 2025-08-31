@@ -22,12 +22,12 @@ func moderateScale(number: CGFloat, factor: CGFloat = 0.5) -> CGFloat {
 
 @inline(__always)
 func getSafeAreaTop() -> CGFloat {
-    return UIApplication.shared.windows.filter { $0.isKeyWindow }.first?.safeAreaInsets.top ?? 0
+    return UIApplication.shared.currentKeyWindow?.safeAreaInsets.top ?? 0
 }
 
 @inline(__always)
 func getSafeAreaBottom() -> CGFloat {
-    return UIApplication.shared.windows.filter { $0.isKeyWindow }.first?.safeAreaInsets.bottom ?? 0
+    return UIApplication.shared.currentKeyWindow?.safeAreaInsets.bottom ?? 0
 }
 
 @inline(__always)
