@@ -11,8 +11,7 @@ import Then
 
 final class NoSearchedDataCell: UICollectionViewCell {
     private lazy var noDataLabel: UILabel = UILabel().then {
-        $0.attributedText = FontManager.body2M.setFont("검색 결과가 없어요!\n검색어를 입력해 주세요.",
-                                                       alignment: .center)
+        $0.attributedText = FontManager.body2M.setFont(alignment: .center)
         $0.numberOfLines = 0
     }
     
@@ -32,5 +31,9 @@ final class NoSearchedDataCell: UICollectionViewCell {
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func updateView(titleText: String) {
+        noDataLabel.text = titleText
     }
 }

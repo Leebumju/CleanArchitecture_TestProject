@@ -116,6 +116,7 @@ extension AllUserListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if viewModel.searchedUsers.isEmpty {
             guard let cell = collectionView.dequeueReusableCell(NoSearchedDataCell.self, indexPath: indexPath) else { return .init() }
+            cell.updateView(titleText: "검색 결과가 없어요!\n검색어를 입력해 주세요.")
             return cell
         } else {
             guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }

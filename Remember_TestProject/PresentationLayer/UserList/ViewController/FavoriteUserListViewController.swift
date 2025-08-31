@@ -140,7 +140,11 @@ extension FavoriteUserListViewController: UITextFieldDelegate {
 
 extension FavoriteUserListViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return viewModel.favoriteUsers.count
+        if viewModel.favoriteUsers.isEmpty {
+            return 1
+        } else {
+            return viewModel.favoriteUsers.count
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
@@ -170,14 +174,15 @@ extension FavoriteUserListViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let favoriteUsers = viewModel.favoriteUsers
-        let section = favoriteUsers[indexPath.section]
-        let user = section.users[indexPath.item]
         
         if favoriteUsers.isEmpty {
             guard let cell = collectionView.dequeueReusableCell(NoSearchedDataCell.self, indexPath: indexPath) else { return .init() }
-            
+            cell.updateView(titleText: "등록된 즐겨찾기 유저가 없어요!")
             return cell
         } else {
+            let section = favoriteUsers[indexPath.section]
+            let user = section.users[indexPath.item]
+            
             guard let cell = collectionView.dequeueReusableCell(GitHubUserCell.self, indexPath: indexPath) else { return .init() }
             cell.updateView(with: user)
             cell.favoriteButton.didTapped { [weak self] in
