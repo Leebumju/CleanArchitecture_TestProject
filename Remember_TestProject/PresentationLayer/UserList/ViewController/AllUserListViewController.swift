@@ -75,16 +75,17 @@ private extension AllUserListViewController {
 
     func bindLoading() {
         viewModel.isLoadingPublisher
-            .mainSink { isLoading in
+            .mainSink { [weak self] isLoading in
+                guard let self = self else { return }
                 guard !self.viewModel.isPaging else { return }
-                isLoading ? CommonUtil.showLoadingView() : CommonUtil.hideLoadingView()
+                isLoading ? LoadingManager.shared.show() : LoadingManager.shared.hide()
             }.store(in: &cancelBag)
     }
 
     func bindErrors() {
         viewModel.errorPublisher
-            .mainSink { [weak self] error in
-                self?.showToastMessageView(title: error.localizedDescription)
+            .mainSink { error in
+                ToastManager.show(title: error.localizedDescription)
             }.store(in: &cancelBag)
     }
 }

@@ -10,11 +10,6 @@ import SnapKit
 import Then
 import Combine
 
-import UIKit
-import SnapKit
-import Then
-import Combine
-
 final class FavoriteUserListViewController: BaseViewController {
     // MARK: - Properties
     private var cancelBag = Set<AnyCancellable>()
@@ -72,8 +67,8 @@ private extension FavoriteUserListViewController {
 
     func bindErrors() {
         viewModel.errorPublisher
-            .mainSink { [weak self] error in
-                self?.showToastMessageView(title: error.localizedDescription)
+            .mainSink { error in
+                ToastManager.show(title: error.localizedDescription)
             }.store(in: &cancelBag)
     }
 
