@@ -13,40 +13,42 @@ struct FavoriteUserSection {
 }
 
 final class FavoriteUserListViewModel: BaseViewModel {
+    // MARK: - Properties
     private let usecase: FavoriteUserListUsecaseProtocol
-    
     private var allFavoriteUsers: [GitHubUserEntity] = []
     private var currentSearchKeyword: String = ""
     
+    // MARK: - Publishers
     private let favoriteUsersSectionsSubject = CurrentValueSubject<[FavoriteUserSection], Never>([])
     var favoriteUsersSectionsPublisher: AnyPublisher<[FavoriteUserSection], Never> {
         favoriteUsersSectionsSubject.eraseToAnyPublisher()
     }
-    var favoriteUsers: [FavoriteUserSection] {
-        favoriteUsersSectionsSubject.value
-    }
+    var favoriteUsers: [FavoriteUserSection] { favoriteUsersSectionsSubject.value }
     
     private let errorSubject = PassthroughSubject<Error, Never>()
-    var errorPublisher: AnyPublisher<Error, Never> {
-        errorSubject.eraseToAnyPublisher()
-    }
+    var errorPublisher: AnyPublisher<Error, Never> { errorSubject.eraseToAnyPublisher() }
     
+    // MARK: - Init
     init(usecase: FavoriteUserListUsecaseProtocol) {
         self.usecase = usecase
         super.init(usecase: usecase)
-        
-        bind()
+        bindFavorites()
     }
     
-    private func bind() {
+    // MARK: - Binding
+    private func bindFavorites() {
         usecase.favoriteUsersPublisher
             .sink { [weak self] users in
                 guard let self = self else { return }
-                self.allFavoriteUsers = users.sorted { $0.login.localizedCaseInsensitiveCompare($1.login) == .orderedAscending }
+                self.allFavoriteUsers = users.sorted {
+                    $0.login.localizedCaseInsensitiveCompare($1.login) == .orderedAscending
+                }
                 self.updateSections()
-            }.store(in: &cancelBag)
+            }
+            .store(in: &cancelBag)
     }
     
+    // MARK: - Public Methods
     func searchUsers(keyword: String) {
         currentSearchKeyword = keyword
         updateSections()
@@ -60,18 +62,19 @@ final class FavoriteUserListViewModel: BaseViewModel {
         }
     }
     
+    // MARK: - Helpers
     private func updateSections() {
-        let filtered: [GitHubUserEntity]
-        if currentSearchKeyword.isEmpty {
-            filtered = allFavoriteUsers
-        } else {
-            filtered = allFavoriteUsers.filter { $0.login.localizedCaseInsensitiveContains(currentSearchKeyword) }
-        }
+        let filteredUsers = currentSearchKeyword.isEmpty
+            ? allFavoriteUsers
+            : allFavoriteUsers.filter {
+                $0.login.localizedCaseInsensitiveContains(currentSearchKeyword)
+            }
         
-        let grouped = Dictionary(grouping: filtered) { String($0.login.prefix(1)).uppercased() }
+        let grouped = Dictionary(grouping: filteredUsers) { String($0.login.prefix(1)).uppercased() }
         let sections = grouped.keys.sorted().map { key in
             FavoriteUserSection(title: key, users: grouped[key]!)
         }
+        
         favoriteUsersSectionsSubject.send(sections)
     }
 }

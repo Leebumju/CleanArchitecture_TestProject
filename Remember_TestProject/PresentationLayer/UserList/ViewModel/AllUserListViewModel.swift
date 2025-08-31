@@ -8,21 +8,21 @@
 import Combine
 
 final class AllUserListViewModel: BaseViewModel {
-    private var favoriteUsers: [GitHubUserEntity] = []
+    // MARK: - State
+    private var favoriteUserIds = Set<Int>()
+    private(set) var isPaging = false
+    
     // MARK: - Publishers
     private let searchedUsersSubject = CurrentValueSubject<[GitHubUserEntity], Never>([])
     var searchedUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
         searchedUsersSubject.eraseToAnyPublisher()
     }
-    var searchedUsers: [GitHubUserEntity] {
-        searchedUsersSubject.value
-    }
+    var searchedUsers: [GitHubUserEntity] { searchedUsersSubject.value }
     
     private let isLoadingSubject = CurrentValueSubject<Bool, Never>(false)
     var isLoadingPublisher: AnyPublisher<Bool, Never> {
         isLoadingSubject.eraseToAnyPublisher()
     }
-    private(set) var isPaging: Bool = false
     
     private let errorSubject = PassthroughSubject<Error, Never>()
     var errorPublisher: AnyPublisher<Error, Never> {
@@ -38,24 +38,18 @@ final class AllUserListViewModel: BaseViewModel {
         bindFavorites()
     }
     
-    // MARK: - Bind Favorites
+    // MARK: - Binding
     private func bindFavorites() {
         usecase.favoriteUsersPublisher
             .sink { [weak self] favorites in
                 guard let self = self else { return }
-                self.favoriteUsers = favorites
-                let favoriteIds = Set(favorites.map { $0.id })
-                let updated = self.searchedUsers.map { user -> GitHubUserEntity in
-                    var u = user
-                    u.isFavorite = favoriteIds.contains(u.id)
-                    return u
-                }
-                self.searchedUsersSubject.send(updated)
+                self.favoriteUserIds = Set(favorites.map { $0.id })
+                self.sendUsers(self.searchedUsers)
             }
             .store(in: &cancelBag)
     }
     
-    // MARK: - Search Users
+    // MARK: - Public Methods
     func searchUsers(keyword: String) {
         guard !isLoadingSubject.value else { return }
         isLoadingSubject.send(true)
@@ -65,15 +59,13 @@ final class AllUserListViewModel: BaseViewModel {
             defer { isLoadingSubject.send(false) }
             do {
                 let users = try await usecase.searchUsers(query: keyword, perPage: 30)
-                let updatedUsers = updateFavorites(for: users)
-                searchedUsersSubject.send(updatedUsers)
+                sendUsers(users)
             } catch {
                 errorSubject.send(error)
             }
         }
     }
     
-    // MARK: - Load Next Page
     func loadNextPage() {
         guard !isLoadingSubject.value else { return }
         isLoadingSubject.send(true)
@@ -83,15 +75,13 @@ final class AllUserListViewModel: BaseViewModel {
             defer { isLoadingSubject.send(false) }
             do {
                 let users = try await usecase.loadNextPage(perPage: 30)
-                let updatedUsers = updateFavorites(for: searchedUsers + users)
-                searchedUsersSubject.send(updatedUsers)
+                sendUsers(searchedUsers + users)
             } catch {
                 errorSubject.send(error)
             }
         }
     }
     
-    // MARK: - Toggle Favorite
     func toggleFavorite(_ user: GitHubUserEntity) {
         do {
             try usecase.toggleFavorite(user)
@@ -100,12 +90,13 @@ final class AllUserListViewModel: BaseViewModel {
         }
     }
     
-    private func updateFavorites(for users: [GitHubUserEntity]) -> [GitHubUserEntity] {
-        let favoriteIds = Set(favoriteUsers.map { $0.id })
-        return users.map { user -> GitHubUserEntity in
+    // MARK: - Helpers
+    private func sendUsers(_ users: [GitHubUserEntity]) {
+        let updated = users.map { user -> GitHubUserEntity in
             var u = user
-            u.isFavorite = favoriteIds.contains(u.id)
+            u.isFavorite = favoriteUserIds.contains(u.id)
             return u
         }
+        searchedUsersSubject.send(updated)
     }
 }
