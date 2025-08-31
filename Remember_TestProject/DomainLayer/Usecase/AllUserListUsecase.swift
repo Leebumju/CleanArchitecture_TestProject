@@ -45,8 +45,7 @@ extension AllUserListUsecase: AllUserListUsecaseProtocol {
         return remoteUsers
     }
 
-    @MainActor
-    func toggleFavorite(_ user: GitHubUserEntity) async throws {
+    func toggleFavorite(_ user: GitHubUserEntity) throws {
         if user.isFavorite {
             try repository.removeFavorite(user)
         } else {

@@ -22,8 +22,8 @@ final class FavoriteUserListUsecase {
 }
 
 extension FavoriteUserListUsecase: FavoriteUserListUsecaseProtocol {
-    @MainActor
-    func toggleFavorite(_ user: GitHubUserEntity) async throws {
+    
+    func toggleFavorite(_ user: GitHubUserEntity) throws {
         if user.isFavorite {
             try repository.removeFavorite(user)
         } else {
