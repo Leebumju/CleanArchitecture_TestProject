@@ -12,10 +12,9 @@ import Combine
 final class AllUserListUsecase {
     private var currentPage: Int = 1
     private var isEnd: Bool = false
-    private var storedQuery: String = ""
+    private var currentQuery: String = ""
     
     private let repository: UserListRepositoryProtocol
-    private(set) var errorSubject = PassthroughSubject<Error, Never>()
     
     var favoriteUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> {
         repository.favoriteUsersPublisher
@@ -28,7 +27,7 @@ final class AllUserListUsecase {
 
 extension AllUserListUsecase: AllUserListUsecaseProtocol {
     func searchUsers(query: String, perPage: Int) async throws -> [GitHubUserEntity] {
-        storedQuery = query
+        currentQuery = query
         resetPaging()
         return try await loadNextPage(perPage: perPage)
     }
@@ -36,7 +35,7 @@ extension AllUserListUsecase: AllUserListUsecaseProtocol {
     func loadNextPage(perPage: Int) async throws -> [GitHubUserEntity] {
         guard !isEnd else { return [] }
         let (remoteUsers, totalCount) = try await repository.searchUsers(
-            query: storedQuery,
+            query: currentQuery,
             page: currentPage,
             perPage: perPage
         )
@@ -46,7 +45,8 @@ extension AllUserListUsecase: AllUserListUsecaseProtocol {
         return remoteUsers
     }
 
-    func toggleFavorite(_ user: GitHubUserEntity) throws {
+    @MainActor
+    func toggleFavorite(_ user: GitHubUserEntity) async throws {
         if user.isFavorite {
             try repository.removeFavorite(user)
         } else {

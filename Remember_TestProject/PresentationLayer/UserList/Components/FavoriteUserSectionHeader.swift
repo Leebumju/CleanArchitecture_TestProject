@@ -34,7 +34,7 @@ final class FavoriteUserSectionHeader: UICollectionReusableView {
     private func setupConstraints() {
         titleLabel.snp.makeConstraints {
             $0.centerY.equalToSuperview()
-            $0.leading.trailing.equalToSuperview().offset(moderateScale(number: 12))
+            $0.leading.trailing.equalToSuperview().inset(moderateScale(number: 12))
         }
     }
     

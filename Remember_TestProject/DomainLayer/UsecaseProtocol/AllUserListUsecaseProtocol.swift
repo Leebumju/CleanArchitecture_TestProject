@@ -12,5 +12,5 @@ protocol AllUserListUsecaseProtocol: BaseUsecaseProtocol {
     
     func searchUsers(query: String, perPage: Int) async throws -> [GitHubUserEntity]
     func loadNextPage(perPage: Int) async throws -> [GitHubUserEntity]
-    func toggleFavorite(_ user: GitHubUserEntity) throws
+    func toggleFavorite(_ user: GitHubUserEntity) async throws
 }

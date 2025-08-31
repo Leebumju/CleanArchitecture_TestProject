@@ -9,5 +9,5 @@ import Combine
 
 protocol FavoriteUserListUsecaseProtocol: BaseUsecaseProtocol {
     var favoriteUsersPublisher: AnyPublisher<[GitHubUserEntity], Never> { get }
-    func toggleFavorite(_ user: GitHubUserEntity) throws
+    func toggleFavorite(_ user: GitHubUserEntity) async throws
 }

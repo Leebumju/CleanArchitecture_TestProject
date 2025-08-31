@@ -89,7 +89,9 @@ final class GitHubUserCell: UICollectionViewCell {
     
     func updateView(with gitHubUser: GitHubUserEntity) {
         userLoginLabel.text = gitHubUser.login
-        favoriteButton.image = UIImage(systemName: "star.fill")?.tinted(gitHubUser.isFavorite ? .systemYellow : .systemGray5)
+        favoriteButton.image = UIImage(systemName: "star.fill")?.tinted(
+            gitHubUser.isFavorite ? .systemYellow : .systemGray5
+        )
         
         if gitHubUser.avatarUrl.isEmpty {
             avatarImageView.image = UIImage(systemName: "person.circle.fill")?.tinted(.systemGray5)

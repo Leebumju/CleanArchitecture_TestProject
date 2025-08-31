@@ -11,7 +11,7 @@ enum FontSet {
     case regular
     case medium
     case bold
-
+    
     func font(_ size: CGFloat) -> UIFont? {
         switch self {
         case .regular:

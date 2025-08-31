@@ -83,10 +83,12 @@ final class AllUserListViewModel: BaseViewModel {
     }
     
     func toggleFavorite(_ user: GitHubUserEntity) {
-        do {
-            try usecase.toggleFavorite(user)
-        } catch {
-            errorSubject.send(error)
+        Task {
+            do {
+                try await usecase.toggleFavorite(user)
+            } catch {
+                errorSubject.send(error)
+            }
         }
     }
     
